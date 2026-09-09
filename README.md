@@ -30,7 +30,7 @@ Not claimed: multi-provider SDKs (no native Anthropic/Google clients), or a drop
 ## Install
 
 ```bash
-go get github.com/steckerfy/tiny_agents@latest
+go get github.com/steckerfy/tiny_agents@v1.0.0
 ```
 
 Set an API key for the provider you use:
@@ -342,7 +342,7 @@ Live OpenRouter checks (skips if the key is unset):
 go test -tags=integration ./agent -run TestIntegration -count=1
 ```
 
-Package examples (also shown on pkg.go.dev once published):
+Package examples:
 
 ```bash
 go test ./tool ./model ./agent -run Example
@@ -350,7 +350,7 @@ go test ./tool ./model ./agent -run Example
 
 ## Status
 
-Early library. The public API may change before a tagged v1.
+**v1.0.0.** The public API is the `agent`, `model`, and `tool` packages.
 
 ## License
 
