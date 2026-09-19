@@ -30,7 +30,7 @@ Not claimed: multi-provider SDKs (no native Anthropic/Google clients), or a drop
 ## Install
 
 ```bash
-go get github.com/steckerfy/tiny_agents@v1.0.0
+go get github.com/davi-miquelim/tiny_agents@v1.0.0
 ```
 
 Set an API key for the provider you use:
