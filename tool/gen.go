@@ -11,7 +11,7 @@ import (
 	"unicode"
 )
 
-func CreateTool[T any, K any](description string, toolFunc func(context.Context, T) (K, error)) (CallableTool, error) {
+func CreateTool[T any, K any](description string, toolFunc func(context.Context, T) (K, error)) CallableTool {
 	var zero T
 	t := reflect.TypeOf(zero)
 	if t == nil || t.Kind() != reflect.Struct {
@@ -24,7 +24,7 @@ func CreateTool[T any, K any](description string, toolFunc func(context.Context,
 
 	name, err := funcName(toolFunc)
 	if err != nil {
-		return CallableTool{}, err
+		panic(fmt.Sprintf("failed to get function name %v", err))
 	}
 
 	return CallableTool{
@@ -40,10 +40,10 @@ func CreateTool[T any, K any](description string, toolFunc func(context.Context,
 				},
 			},
 		},
-		call: func(ctx context.Context, argsJSON string) (any, error) {
+		call: func(ctx context.Context, argsJSON string) (K, error) {
 			var args T
 			if err := json.Unmarshal([]byte(argsJSON), &args); err != nil {
-				return nil, fmt.Errorf("unmarshal tool args: %w", err)
+				panic(fmt.Sprintf("failed to parse function args %v",err))
 			}
 			return toolFunc(ctx, args)
 		},
