@@ -11,7 +11,7 @@ import (
 	"unicode"
 )
 
-func CreateTool[T any](description string, toolFunc func(context.Context, T) (any, error)) (CallableTool, error) {
+func CreateTool[T any, K any](description string, toolFunc func(context.Context, T) (K, error)) (CallableTool, error) {
 	var zero T
 	t := reflect.TypeOf(zero)
 	if t == nil || t.Kind() != reflect.Struct {
