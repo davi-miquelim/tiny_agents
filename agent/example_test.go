@@ -3,7 +3,7 @@ package agent_test
 import (
 	"fmt"
 
-	"github.com/steckerfy/tiny_agents/agent"
+	"github.com/davi-miquelim/tiny_agents/agent"
 )
 
 func ExampleAppendUserMessage() {

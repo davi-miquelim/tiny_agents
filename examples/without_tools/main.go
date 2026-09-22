@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/steckerfy/tiny_agents/agent"
-	"github.com/steckerfy/tiny_agents/model"
+	"github.com/davi-miquelim/tiny_agents/agent"
+	"github.com/davi-miquelim/tiny_agents/model"
 )
 
 func main() {

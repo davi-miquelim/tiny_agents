@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/steckerfy/tiny_agents/model"
-	"github.com/steckerfy/tiny_agents/tool"
+	"github.com/davi-miquelim/tiny_agents/model"
+	"github.com/davi-miquelim/tiny_agents/tool"
 )
 
 // SummaryResult is the structured handoff payload from the summarizer agent.

@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/steckerfy/tiny_agents/agent"
-	"github.com/steckerfy/tiny_agents/model"
-	"github.com/steckerfy/tiny_agents/tool"
+	"github.com/davi-miquelim/tiny_agents/agent"
+	"github.com/davi-miquelim/tiny_agents/model"
+	"github.com/davi-miquelim/tiny_agents/tool"
 )
 
 const integrationModel = "openai/gpt-4o-mini"

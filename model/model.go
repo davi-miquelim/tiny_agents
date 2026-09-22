@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 
-	aihttp "github.com/steckerfy/tiny_agents/internal/http"
-	"github.com/steckerfy/tiny_agents/tool"
+	aihttp "github.com/davi-miquelim/tiny_agents/internal/http"
+	"github.com/davi-miquelim/tiny_agents/tool"
 )
 
 type ReasoningEffort string

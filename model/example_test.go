@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/steckerfy/tiny_agents/model"
+	"github.com/davi-miquelim/tiny_agents/model"
 )
 
 func ExampleNewParameters() {

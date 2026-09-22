@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/steckerfy/tiny_agents/tool"
+	"github.com/davi-miquelim/tiny_agents/tool"
 )
 
 type addArgs struct {
