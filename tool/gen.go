@@ -11,11 +11,11 @@ import (
 	"unicode"
 )
 
-func CreateTool[T any, K any](description string, toolFunc func(context.Context, T) (K, error)) CallableTool {
-	var zero T
+func CreateTool[P any, O any](description string, toolFunc func(context.Context, P) (O, error)) CallableTool {
+	var zero P
 	t := reflect.TypeOf(zero)
 	if t == nil || t.Kind() != reflect.Struct {
-		return CallableTool{}, fmt.Errorf("CreateTool: T must be a struct, got %v", t)
+		panic(fmt.Errorf("CreateTool: T must be a struct, got %v", t))
 	}
 
 	properties := make(map[string]Property)
@@ -40,14 +40,21 @@ func CreateTool[T any, K any](description string, toolFunc func(context.Context,
 				},
 			},
 		},
-		call: func(ctx context.Context, argsJSON string) (K, error) {
-			var args T
-			if err := json.Unmarshal([]byte(argsJSON), &args); err != nil {
-				panic(fmt.Sprintf("failed to parse function args %v",err))
+		Callback: func(ctx context.Context, args ...any) (any, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("unmarshal tool args: expected JSON string")
 			}
-			return toolFunc(ctx, args)
+			raw, ok := args[0].(string)
+			if !ok {
+				return nil, fmt.Errorf("unmarshal tool args: expected JSON string")
+			}
+			var parsed P
+			if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+				return nil, fmt.Errorf("unmarshal tool args: %w", err)
+			}
+			return toolFunc(ctx, parsed)
 		},
-	}, nil
+	}
 }
 
 func funcName(fn any) (string, error) {

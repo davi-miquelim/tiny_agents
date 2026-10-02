@@ -17,19 +17,17 @@ type SummaryResult struct {
 	OpenQuestions []string `json:"open_questions" desc:"Unresolved questions or pending actions"`
 }
 
-func submitSummary(_ context.Context, _ SummaryResult) (any, error) { return nil, nil }
+func submitSummary(ctx context.Context, res SummaryResult) (any, error) { return nil, nil }
 
 // NewSummarizerAgent returns an Agent configured to end each turn with a
 // SummaryResult handoff via CompleteTurn. Compaction is disabled so a
 // compacting loop cannot recurse into another summarizer turn.
 func NewSummarizerAgent(provider model.Provider, modelParams model.Parameters) (Agent, error) {
-	submit, err := tool.CreateTool(
+	submit := tool.CreateTool(
 		"Submit the conversation summary fields for this turn. Ends the turn.",
 		submitSummary,
 	)
-	if err != nil {
-		return Agent{}, err
-	}
+
 	return Agent{
 		Role: "Conversation summarizer",
 		Goals: []string{

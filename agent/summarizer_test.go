@@ -341,12 +341,9 @@ func TestCompleteSkipsCompactionWithoutPriorHistory(t *testing.T) {
 }
 
 func TestCompleteTurnCompactsOverWindow(t *testing.T) {
-	submit, err := tool.CreateTool("Submit handoff", func(_ context.Context, _ handoffArgs) (any, error) {
+	submit := tool.CreateTool("Submit handoff", func(_ context.Context, _ handoffArgs) (any, error) {
 		return nil, nil
 	})
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
 
 	var requests atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -459,12 +456,9 @@ func TestCompleteKeepsHistoryWhenTurnFailsAfterCompact(t *testing.T) {
 }
 
 func TestCompleteTurnKeepsHistoryWhenTurnFailsAfterCompact(t *testing.T) {
-	submit, err := tool.CreateTool("Submit handoff", func(_ context.Context, _ handoffArgs) (any, error) {
+	submit := tool.CreateTool("Submit handoff", func(_ context.Context, _ handoffArgs) (any, error) {
 		return nil, nil
 	})
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
 
 	var requests atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

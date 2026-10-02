@@ -57,10 +57,7 @@ func pingTool(_ context.Context, a pingArgs) (any, error) { return map[string]an
 
 func TestExecuteRegularToolsDoesNotTouchTranscript(t *testing.T) {
 	t.Parallel()
-	ping, err := tool.CreateTool("test ping tool", pingTool)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	ping := tool.CreateTool("test ping tool", pingTool)
 	a := Agent{
 		Tools: []tool.CallableTool{ping},
 	}
@@ -85,12 +82,10 @@ func TestExecuteRegularToolsDoesNotTouchTranscript(t *testing.T) {
 
 func TestExecuteRegularToolsFeedsErrorsBack(t *testing.T) {
 	t.Parallel()
-	failing, err := tool.CreateTool("failing test tool", func(_ context.Context, _ pingArgs) (any, error) {
+	failing := tool.CreateTool("failing test tool", func(_ context.Context, _ pingArgs) (any, error) {
 		return nil, fmt.Errorf("boom")
 	})
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+
 	a := Agent{Tools: []tool.CallableTool{failing}}
 	api := &MessagesBuffer{Messages: []model.Message{{Role: model.System, Content: "sys"}}}
 
@@ -113,15 +108,12 @@ func TestExecuteRegularToolsFeedsErrorsBack(t *testing.T) {
 }
 
 func TestCallToolCancelsCooperativeTool(t *testing.T) {
-	blocking, err := tool.CreateTool("blocking test tool", func(ctx context.Context, _ pingArgs) (any, error) {
+	blocking := tool.CreateTool("blocking test tool", func(ctx context.Context, _ pingArgs) (any, error) {
 		<-ctx.Done()
 		return nil, ctx.Err()
 	})
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
 
-	_, err = callTool(context.Background(), 10*time.Millisecond, blocking, `{"n":1}`)
+	_, err := callTool(context.Background(), 10*time.Millisecond, blocking, `{"n":1}`)
 	if err != context.DeadlineExceeded {
 		t.Fatalf("callTool error = %v, want DeadlineExceeded", err)
 	}
@@ -142,10 +134,7 @@ func TestCompleteStreamsToolRounds(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	ping, err := tool.CreateTool("test ping tool", pingTool)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	ping := tool.CreateTool("test ping tool", pingTool)
 	a := Agent{
 		Provider:    model.OpenRouter,
 		ModelParams: model.Parameters{Model: "m", URL: srv.URL, APIKey: "test-key"},
@@ -277,10 +266,7 @@ func TestBuildParamsDerivesToolsFromExecutablesAndResult(t *testing.T) {
 		t.Fatalf("ToolChoice = %#v, want nil when Agent has no tools", params.ToolChoice)
 	}
 
-	owned, err := tool.CreateTool("owned tool", pingTool)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	owned := tool.CreateTool("owned tool", pingTool)
 	result := tool.Tool{Type: "function", Function: tool.Function{Name: "submit_handoff"}}
 	a.Tools = []tool.CallableTool{owned}
 	a.ResultTool = result

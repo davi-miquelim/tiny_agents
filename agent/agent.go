@@ -455,10 +455,10 @@ func toolErrorJSON(msg string) string {
 }
 
 // ponytail: trusts tools to honor ctx; wrap in a goroutine if you need hard kill.
-func callTool(ctx context.Context, timeout time.Duration, fn tool.CallableTool, argsJSON string) (any, error) {
+func callTool(ctx context.Context, timeout time.Duration, tool tool.CallableTool, argsJSON string) (any, error) {
 	toolCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	return fn.Call(toolCtx, argsJSON)
+	return tool.Callback(toolCtx, argsJSON)
 }
 
 func teeStream(ctx context.Context, dst, working *MessagesBuffer, upstream <-chan model.ChatStreamChunk) <-chan model.ChatStreamChunk {

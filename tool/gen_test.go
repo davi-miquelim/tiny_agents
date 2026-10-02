@@ -35,10 +35,7 @@ func GetWeather(_ context.Context, args GetWeatherArgs) (any, error) {
 }
 
 func TestCreateToolAndCallIntegration(t *testing.T) {
-	ct, err := CreateTool("Get current weather for a location", GetWeather)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	ct := CreateTool("Get current weather for a location", GetWeather)
 
 	if ct.Type != "function" {
 		t.Errorf("Type = %q, want function", ct.Type)
@@ -130,7 +127,7 @@ func TestCreateToolAndCallIntegration(t *testing.T) {
 		t.Fatalf("tool call name = %q", toolCall.Function.Name)
 	}
 
-	out, err := ct.Call(context.Background(), toolCall.Function.Arguments)
+	out, err := ct.Callback(context.Background(), toolCall.Function.Arguments)
 	if err != nil {
 		t.Fatalf("Call: %v", err)
 	}
@@ -160,11 +157,8 @@ func TestCreateToolAndCallIntegration(t *testing.T) {
 }
 
 func TestCreateToolCallInvalidJSON(t *testing.T) {
-	ct, err := CreateTool("Get weather", GetWeather)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
-	_, err = ct.Call(context.Background(), `{not-json`)
+	ct := CreateTool("Get weather", GetWeather)
+	_, err := ct.Callback(context.Background(), `{not-json`)
 	if err == nil {
 		t.Fatal("expected unmarshal error")
 	}
@@ -174,13 +168,17 @@ func TestCreateToolCallInvalidJSON(t *testing.T) {
 }
 
 func TestCreateToolErrorsOnNonStruct(t *testing.T) {
-	_, err := CreateTool("echo", func(_ context.Context, s string) (any, error) { return s, nil })
-	if err == nil {
-		t.Fatal("expected error for non-struct T")
-	}
-	if !strings.Contains(err.Error(), "must be a struct") {
-		t.Errorf("error = %v", err)
-	}
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for non-struct T")
+		}
+		err, ok := r.(error)
+		if !ok || !strings.Contains(err.Error(), "must be a struct") {
+			t.Errorf("panic = %v", r)
+		}
+	}()
+	CreateTool("echo", func(_ context.Context, s string) (any, error) { return s, nil })
 }
 
 type LookupBookArgs struct {
@@ -193,10 +191,7 @@ func LookupBook(_ context.Context, args LookupBookArgs) (any, error) {
 }
 
 func TestCreateToolSkipsJSONDashFields(t *testing.T) {
-	ct, err := CreateTool("Look up a book", LookupBook)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	ct := CreateTool("Look up a book", LookupBook)
 	props := ct.Function.Parameters.Properties
 	if _, ok := props["author"]; ok {
 		t.Error("json:\"-\" field should be skipped")
@@ -205,7 +200,7 @@ func TestCreateToolSkipsJSONDashFields(t *testing.T) {
 		t.Fatal("missing title")
 	}
 
-	out, err := ct.Call(context.Background(), `{"title":"The Silmarillion","author":"ignored"}`)
+	out, err := ct.Callback(context.Background(), `{"title":"The Silmarillion","author":"ignored"}`)
 	if err != nil {
 		t.Fatalf("Call: %v", err)
 	}
@@ -243,10 +238,7 @@ func ptrEmbed(_ context.Context, args ptrEmbedArgs) (any, error) {
 }
 
 func TestCreateToolSchemaGaps(t *testing.T) {
-	ct, err := CreateTool("Schema gaps", schemaGap)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	ct := CreateTool("Schema gaps", schemaGap)
 	props := ct.Function.Parameters.Properties
 	req := ct.Function.Parameters.Required
 
@@ -277,10 +269,7 @@ func TestCreateToolSchemaGaps(t *testing.T) {
 		}
 	}
 
-	ptr, err := CreateTool("Pointer embed", ptrEmbed)
-	if err != nil {
-		t.Fatalf("CreateTool ptr: %v", err)
-	}
+	ptr := CreateTool("Pointer embed", ptrEmbed)
 	if _, ok := ptr.Function.Parameters.Properties["name"]; !ok {
 		t.Fatal("missing flattened name from *UpsertRequest")
 	}

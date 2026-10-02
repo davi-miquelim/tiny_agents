@@ -17,11 +17,7 @@ func addNumbers(_ context.Context, args addArgs) (any, error) {
 }
 
 func ExampleCreateTool() {
-	ct, err := tool.CreateTool("Add two integers", addNumbers)
-	if err != nil {
-		fmt.Println("error:", err)
-		return
-	}
+	ct := tool.CreateTool("Add two integers", addNumbers)
 	fmt.Println(ct.Function.Name)
 	fmt.Println(ct.Function.Parameters.Properties["a"].Type)
 	// Output:

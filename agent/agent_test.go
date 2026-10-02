@@ -40,16 +40,13 @@ func TestCompleteTurnMissingResultTool(t *testing.T) {
 
 func TestCompleteTurnNilMessages(t *testing.T) {
 	t.Parallel()
-	submit, err := tool.CreateTool("Submit handoff", func(_ context.Context, h handoffArgs) (any, error) { return nil, nil })
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
+	submit := tool.CreateTool("Submit handoff", func(_ context.Context, h handoffArgs) (any, error) { return nil, nil })
 	a := agent.Agent{
 		Role:        "Bot",
 		ModelParams: testModelParams("m"),
 		ResultTool:  submit.Tool,
 	}
-	_, err = agent.CompleteTurn[handoffArgs](context.Background(), a, nil)
+	_, err := agent.CompleteTurn[handoffArgs](context.Background(), a, nil)
 	if err == nil || !strings.Contains(err.Error(), "nil messages buffer") {
 		t.Fatalf("error = %v, want nil messages buffer", err)
 	}

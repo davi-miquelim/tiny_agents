@@ -57,13 +57,10 @@ func addNumbersTracked(ctx context.Context, args addArgs) (any, error) {
 
 func submitWeatherTool(t *testing.T) tool.Tool {
 	t.Helper()
-	ct, err := tool.CreateTool(
+	ct := tool.CreateTool(
 		"Submit the weather handoff fields for this turn. Ends the turn.",
 		func(_ context.Context, _ weatherHandoff) (any, error) { return nil, nil },
 	)
-	if err != nil {
-		t.Fatalf("CreateTool: %v", err)
-	}
 	return ct.Tool
 }
 
@@ -198,17 +195,11 @@ func TestIntegrationCompleteTurnToolThenResult(t *testing.T) {
 	defer cancel()
 
 	addCalls.Store(0)
-	add, err := tool.CreateTool("Add two integers and return the sum", addNumbersTracked)
-	if err != nil {
-		t.Fatalf("CreateTool add: %v", err)
-	}
-	submit, err := tool.CreateTool(
+	add := tool.CreateTool("Add two integers and return the sum", addNumbersTracked)
+	submit := tool.CreateTool(
 		"Submit the final handoff fields for this turn. Ends the turn.",
 		func(_ context.Context, _ sumHandoff) (any, error) { return nil, nil },
 	)
-	if err != nil {
-		t.Fatalf("CreateTool submit: %v", err)
-	}
 
 	a := agent.Agent{
 		Role:  "Calculator clerk",

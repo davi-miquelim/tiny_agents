@@ -38,13 +38,7 @@ type Tool struct {
 
 type CallableTool struct {
 	Tool
-	call func(context.Context, string) (any, error)
-}
-
-// Call invokes the tool with ctx. Long-running tools should honor ctx.Done()
-// so callers can cancel work such as timed-out tool executions.
-func (c CallableTool) Call(ctx context.Context, argsJSON string) (any, error) {
-	return c.call(ctx, argsJSON)
+	Callback func(context.Context, ...any) (any, error)
 }
 
 type FunctionCall struct {

@@ -22,11 +22,7 @@ func addNumbers(_ context.Context, args addArgs) (any, error) {
 }
 
 func main() {
-	add, err := tool.CreateTool("Add two integers and return the sum", addNumbers)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	add := tool.CreateTool("Add two integers and return the sum", addNumbers)
 	params, err := model.NewParameters(model.OpenRouter)
 	if err != nil {
 		log.Fatal(err)
