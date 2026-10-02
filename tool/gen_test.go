@@ -275,6 +275,23 @@ func TestCreateToolSchemaGaps(t *testing.T) {
 	}
 }
 
+func TestCreateToolName(t *testing.T) {
+	inferred := CreateTool("Get weather", GetWeather)
+	if inferred.Function.Name != "get_weather" {
+		t.Errorf("inferred name = %q, want get_weather", inferred.Function.Name)
+	}
+
+	blank := CreateTool("Get weather", GetWeather, "  ")
+	if blank.Function.Name != "get_weather" {
+		t.Errorf("blank name = %q, want get_weather", blank.Function.Name)
+	}
+
+	explicit := CreateTool("Get weather", GetWeather, "contact_create")
+	if explicit.Function.Name != "contact_create" {
+		t.Errorf("explicit name = %q, want contact_create", explicit.Function.Name)
+	}
+}
+
 func TestMapToJSONStringIntegration(t *testing.T) {
 	s, err := MapToJSONString(map[string]any{"name": "get_weather", "ok": true})
 	if err != nil {

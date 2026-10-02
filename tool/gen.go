@@ -11,7 +11,7 @@ import (
 	"unicode"
 )
 
-func CreateTool[P any, O any](description string, toolFunc func(context.Context, P) (O, error)) CallableTool {
+func CreateTool[P any, O any](description string, toolFunc func(context.Context, P) (O, error), name ...string) CallableTool {
 	var zero P
 	t := reflect.TypeOf(zero)
 	if t == nil || t.Kind() != reflect.Struct {
@@ -22,16 +22,16 @@ func CreateTool[P any, O any](description string, toolFunc func(context.Context,
 	var required []string
 	addStructProperties(t, properties, &required)
 
-	name, err := funcName(toolFunc)
+	toolName, err := resolveToolName(toolFunc, name)
 	if err != nil {
-		panic(fmt.Sprintf("failed to get function name %v", err))
+		panic(err)
 	}
 
 	return CallableTool{
 		Tool: Tool{
 			Type: "function",
 			Function: Function{
-				Name:        snakeCase(name),
+				Name:        toolName,
 				Description: description,
 				Parameters: Params{
 					Type:       "object",
@@ -55,6 +55,20 @@ func CreateTool[P any, O any](description string, toolFunc func(context.Context,
 			return toolFunc(ctx, parsed)
 		},
 	}
+}
+
+func resolveToolName(toolFunc any, name []string) (string, error) {
+	if len(name) > 1 {
+		return "", fmt.Errorf("CreateTool: expected at most one name")
+	}
+	if len(name) == 1 && strings.TrimSpace(name[0]) != "" {
+		return name[0], nil
+	}
+	inferred, err := funcName(toolFunc)
+	if err != nil {
+		return "", err
+	}
+	return snakeCase(inferred), nil
 }
 
 func funcName(fn any) (string, error) {

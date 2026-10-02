@@ -30,7 +30,7 @@ Not claimed: multi-provider SDKs (no native Anthropic/Google clients), or a drop
 ## Install
 
 ```bash
-go get github.com/davi-miquelim/tiny_agents@v1.0.0
+go get github.com/davi-miquelim/tiny_agents@v1.0.4
 ```
 
 Set an API key for the provider you use:
@@ -97,13 +97,10 @@ type weatherHandoff struct {
 }
 
 func main() {
-	submit, err := tool.CreateTool(
+	submit := tool.CreateTool(
 		"Submit the weather handoff fields for this turn. Ends the turn.",
 		func(_ context.Context, _ weatherHandoff) (any, error) { return nil, nil },
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	params, err := model.NewParameters(model.OpenRouter)
 	if err != nil {
@@ -178,8 +175,9 @@ func addNumbers(_ context.Context, args addArgs) (any, error) {
 	return map[string]any{"sum": args.A + args.B}, nil
 }
 
-add, err := tool.CreateTool("Add two integers", addNumbers)
+add := tool.CreateTool("Add two integers", addNumbers)
 // Function name becomes snake_case: "add_numbers"
+// Pass a name to keep it as written: tool.CreateTool("Add two integers", addNumbers, "contact_create")
 ```
 
 Struct tags: `json`, `desc` / `description`, `enum`, `default`, `required:"false"`.
@@ -350,7 +348,7 @@ go test ./tool ./model ./agent -run Example
 
 ## Status
 
-**v1.0.0.** The public API is the `agent`, `model`, and `tool` packages.
+**v1.0.4.** The public API is the `agent`, `model`, and `tool` packages.
 
 ## License
 
