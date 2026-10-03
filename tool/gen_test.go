@@ -292,6 +292,45 @@ func TestCreateToolName(t *testing.T) {
 	}
 }
 
+type depFilter struct {
+	Name string `json:"name" required:"false"`
+}
+
+type depPageArgs struct {
+	Page int `json:"page" required:"false"`
+	depFilter
+}
+
+func TestCreateToolDeps(t *testing.T) {
+	ct := CreateToolDeps("list with a dependency", func(_ context.Context, org string, args depPageArgs) (any, error) {
+		return map[string]any{"org": org, "page": args.Page, "name": args.depFilter.Name}, nil
+	}, "contact_list")
+	if !ct.Deps {
+		t.Fatal("Deps = false")
+	}
+	if ct.Function.Name != "contact_list" {
+		t.Errorf("name = %q", ct.Function.Name)
+	}
+	if _, ok := ct.Function.Parameters.Properties["page"]; !ok {
+		t.Fatal("missing page")
+	}
+	if _, ok := ct.Function.Parameters.Properties["name"]; !ok {
+		t.Fatal("missing flattened name")
+	}
+	out, err := ct.Callback(context.Background(), "acme", `{"page":2,"name":"Ada"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := out.(map[string]any)
+	if !ok || got["org"] != "acme" || got["page"] != 2 || got["name"] != "Ada" {
+		t.Fatalf("out = %#v", out)
+	}
+	plain := CreateTool("plain", GetWeather)
+	if plain.Deps {
+		t.Fatal("CreateTool set Deps")
+	}
+}
+
 func TestMapToJSONStringIntegration(t *testing.T) {
 	s, err := MapToJSONString(map[string]any{"name": "get_weather", "ok": true})
 	if err != nil {

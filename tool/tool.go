@@ -38,6 +38,8 @@ type Tool struct {
 
 type CallableTool struct {
 	Tool
+	// Deps is true when Callback expects a dependency value before the JSON argument.
+	Deps     bool
 	Callback func(context.Context, ...any) (any, error)
 }
 

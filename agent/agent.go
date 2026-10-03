@@ -42,6 +42,8 @@ type Agent struct {
 	Stream      bool
 	// Tools are executable tools. Schemas are derived for the API.
 	Tools []tool.CallableTool
+	// ToolDeps is passed to tools built with CreateToolDeps, ahead of the JSON argument.
+	ToolDeps any
 	// ResultTool is the handoff schema only (never Call'd). Zero name = plain Complete.
 	ResultTool    tool.Tool
 	MaxToolRounds int           // 0 = default 8
@@ -432,7 +434,7 @@ func executeRegularTools(ctx context.Context, a Agent, apiMessages *MessagesBuff
 	for _, tc := range assistantMsg.ToolCalls {
 		content := toolErrorJSON(fmt.Sprintf("unknown tool %q", tc.Function.Name))
 		if fn, ok := lookupTool(a, tc.Function.Name); ok {
-			out, err := callTool(ctx, timeout, fn, tc.Function.Arguments)
+			out, err := callTool(ctx, timeout, a.ToolDeps, fn, tc.Function.Arguments)
 			if err != nil {
 				content = toolErrorJSON(err.Error())
 			} else if payload, err := json.Marshal(out); err != nil {
@@ -455,10 +457,13 @@ func toolErrorJSON(msg string) string {
 }
 
 // ponytail: trusts tools to honor ctx; wrap in a goroutine if you need hard kill.
-func callTool(ctx context.Context, timeout time.Duration, tool tool.CallableTool, argsJSON string) (any, error) {
+func callTool(ctx context.Context, timeout time.Duration, deps any, t tool.CallableTool, argsJSON string) (any, error) {
 	toolCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	return tool.Callback(toolCtx, argsJSON)
+	if t.Deps {
+		return t.Callback(toolCtx, deps, argsJSON)
+	}
+	return t.Callback(toolCtx, argsJSON)
 }
 
 func teeStream(ctx context.Context, dst, working *MessagesBuffer, upstream <-chan model.ChatStreamChunk) <-chan model.ChatStreamChunk {

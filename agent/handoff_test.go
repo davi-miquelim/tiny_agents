@@ -113,7 +113,7 @@ func TestCallToolCancelsCooperativeTool(t *testing.T) {
 		return nil, ctx.Err()
 	})
 
-	_, err := callTool(context.Background(), 10*time.Millisecond, blocking, `{"n":1}`)
+	_, err := callTool(context.Background(), 10*time.Millisecond, nil, blocking, `{"n":1}`)
 	if err != context.DeadlineExceeded {
 		t.Fatalf("callTool error = %v, want DeadlineExceeded", err)
 	}

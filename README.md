@@ -30,7 +30,7 @@ Not claimed: multi-provider SDKs (no native Anthropic/Google clients), or a drop
 ## Install
 
 ```bash
-go get github.com/davi-miquelim/tiny_agents@v1.0.4
+go get github.com/davi-miquelim/tiny_agents@v1.0.5
 ```
 
 Set an API key for the provider you use:
@@ -179,6 +179,8 @@ add := tool.CreateTool("Add two integers", addNumbers)
 // Function name becomes snake_case: "add_numbers"
 // Pass a name to keep it as written: tool.CreateTool("Add two integers", addNumbers, "contact_create")
 ```
+
+`CreateTool` callbacks are `func(ctx, payload)`. `CreateToolDeps` takes `func(ctx, deps, payload)` and sets `Deps`. `Agent.ToolDeps` is passed into that callback, ahead of the JSON argument, only for tools built that way.
 
 Struct tags: `json`, `desc` / `description`, `enum`, `default`, `required:"false"`.
 
@@ -348,7 +350,7 @@ go test ./tool ./model ./agent -run Example
 
 ## Status
 
-**v1.0.4.** The public API is the `agent`, `model`, and `tool` packages.
+**v1.0.5.** The public API is the `agent`, `model`, and `tool` packages.
 
 ## License
 

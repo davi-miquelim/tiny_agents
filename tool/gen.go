@@ -12,49 +12,91 @@ import (
 )
 
 func CreateTool[P any, O any](description string, toolFunc func(context.Context, P) (O, error), name ...string) CallableTool {
+	properties, required := mustSchema[P]()
+	return CallableTool{
+		Tool: functionTool(mustName(toolFunc, name), description, properties, required),
+		Callback: func(ctx context.Context, args ...any) (any, error) {
+			parsed, err := unmarshalArg[P](args)
+			if err != nil {
+				return nil, err
+			}
+			return toolFunc(ctx, parsed)
+		},
+	}
+}
+
+// CreateToolDeps builds a tool whose callback receives a dependency before the JSON payload.
+// Agent.ToolDeps is passed into Callback only when Deps is set.
+func CreateToolDeps[D any, P any, O any](description string, toolFunc func(context.Context, D, P) (O, error), name ...string) CallableTool {
+	properties, required := mustSchema[P]()
+	return CallableTool{
+		Tool: functionTool(mustName(toolFunc, name), description, properties, required),
+		Deps: true,
+		Callback: func(ctx context.Context, args ...any) (any, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("unmarshal tool args: expected dependency and JSON string")
+			}
+			deps, ok := args[0].(D)
+			if !ok {
+				return nil, fmt.Errorf("unmarshal tool args: expected dependency")
+			}
+			parsed, err := unmarshalArg[P](args[1:])
+			if err != nil {
+				return nil, err
+			}
+			return toolFunc(ctx, deps, parsed)
+		},
+	}
+}
+
+func mustSchema[P any]() (map[string]Property, []string) {
 	var zero P
 	t := reflect.TypeOf(zero)
 	if t == nil || t.Kind() != reflect.Struct {
 		panic(fmt.Errorf("CreateTool: T must be a struct, got %v", t))
 	}
-
 	properties := make(map[string]Property)
 	var required []string
 	addStructProperties(t, properties, &required)
+	return properties, required
+}
 
+func mustName(toolFunc any, name []string) string {
 	toolName, err := resolveToolName(toolFunc, name)
 	if err != nil {
 		panic(err)
 	}
+	return toolName
+}
 
-	return CallableTool{
-		Tool: Tool{
-			Type: "function",
-			Function: Function{
-				Name:        toolName,
-				Description: description,
-				Parameters: Params{
-					Type:       "object",
-					Required:   required,
-					Properties: properties,
-				},
+func functionTool(name, description string, properties map[string]Property, required []string) Tool {
+	return Tool{
+		Type: "function",
+		Function: Function{
+			Name:        name,
+			Description: description,
+			Parameters: Params{
+				Type:       "object",
+				Required:   required,
+				Properties: properties,
 			},
 		},
-		Callback: func(ctx context.Context, args ...any) (any, error) {
-			if len(args) != 1 {
-				return nil, fmt.Errorf("unmarshal tool args: expected JSON string")
-			}
-			raw, ok := args[0].(string)
-			if !ok {
-				return nil, fmt.Errorf("unmarshal tool args: expected JSON string")
-			}
-			var parsed P
-			if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
-				return nil, fmt.Errorf("unmarshal tool args: %w", err)
-			}
-			return toolFunc(ctx, parsed)
-		},
 	}
+}
+
+func unmarshalArg[P any](args []any) (P, error) {
+	var parsed P
+	if len(args) != 1 {
+		return parsed, fmt.Errorf("unmarshal tool args: expected JSON string")
+	}
+	raw, ok := args[0].(string)
+	if !ok {
+		return parsed, fmt.Errorf("unmarshal tool args: expected JSON string")
+	}
+	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+		return parsed, fmt.Errorf("unmarshal tool args: %w", err)
+	}
+	return parsed, nil
 }
 
 func resolveToolName(toolFunc any, name []string) (string, error) {
